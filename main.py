@@ -45,6 +45,11 @@ class MainWindow(wx.Frame):
         self.pythonStylesFore = dict()
         self.pythonStylesBack = dict()
 
+        self.sources = []
+        self.toolbars = []
+        self.filenames = []
+        self.dirnames = []
+
         self.foldSymbols = 2
         self.leftMarginWidth = 25
         self.lineNumbersEnable = True
@@ -115,10 +120,10 @@ class MainWindow(wx.Frame):
         self.StatusBar.SetBackgroundColour((100,100,100))
 
         filemenu = wx.Menu()
-        menuNew = filemenu.Append(wx.ID_NEW, "&New", "Create a new document")
         menuOpen = filemenu.Append(wx.ID_OPEN, "&Open", "Open an existing document")
         menuSave = filemenu.Append(wx.ID_SAVE, "&Save", "Save the document")
         menuSaveAs = filemenu.Append(wx.ID_SAVEAS, "Save &As", "Save as new document")
+        menuClose = filemenu.Append(wx.ID_CLOSE, "&Close", "Close current document")
 
         editmenu = wx.Menu()
         menuUndo = editmenu.Append(wx.ID_UNDO, "&Undo", "Undo last action")
@@ -147,8 +152,11 @@ class MainWindow(wx.Frame):
         menubar.Append(terminalmenu, "&Terminal")
         self.SetMenuBar(menubar)
 
+        self.toolbar = self.CreateToolBar(wx.TB_TEXT | wx.TB_NOICONS, -1)
+        self.SetToolBar(self.toolbar)
+
+
         #start new code here
-        self.Bind(wx.EVT_MENU, self.OnNew, menuNew)
         self.Bind(wx.EVT_MENU, self.OnOpen, menuOpen)
         self.Bind(wx.EVT_MENU, self.OnSave, menuSave)
         self.Bind(wx.EVT_MENU, self.OnSaveAs, menuSaveAs)
@@ -170,7 +178,7 @@ class MainWindow(wx.Frame):
         self.control.Bind(wx.EVT_KEY_UP, self.UpdateLineCol)
         self.control.Bind(wx.EVT_CHAR, self.OnCharEvent)
         self.control.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
-        \
+
         self.Show()
 
         # defaulting the style
@@ -186,21 +194,98 @@ class MainWindow(wx.Frame):
 
         self.SetStyling()
 
-    def OnNew(self, e):
-        self.filename = ''
-        self.fileExtension = ''
-        self.control.SetValue("")
+    def AddTool(self):
+        if len(self.toolbars) < 11:
+            self.toolbars.append(self.toolbar.AddLabelTool(wx.ID_ANY, self.filename, wx.Bitmap("Blank.gif")))
+            print(len(self.toolbars))
+            self.sources.append(self.control.GetValue())
+            self.filenames.append(self.filename)
+            self.filenames.append(self.dirname)
+            self.toolbar.Realize()
+
+            if len(self.toolbars) == 1:
+                self.Bind(wx.EVT_MENU, self.onOne, self.toolbars[len(self.toolbars)-1])
+            elif len(self.toolbars) == 2:
+                self.Bind(wx.EVT_MENU, self.onTwo, self.toolbars[len(self.toolbars)-1])
+            elif len(self.toolbars) == 3:
+                self.Bind(wx.EVT_MENU, self.onThree, self.toolbars[len(self.toolbars)-1])
+            elif len(self.toolbars) == 4:
+                self.Bind(wx.EVT_MENU, self.onFour, self.toolbars[len(self.toolbars)-1])
+            elif len(self.toolbars) == 5:
+                self.Bind(wx.EVT_MENU, self.onFive, self.toolbars[len(self.toolbars)-1])
+            elif len(self.toolbars) == 6:
+                self.Bind(wx.EVT_MENU, self.onSix, self.toolbars[len(self.toolbars)-1])
+            elif len(self.toolbars) == 7:
+                self.Bind(wx.EVT_MENU, self.onSeven, self.toolbars[len(self.toolbars)-1])
+            elif len(self.toolbars) == 8:
+                self.Bind(wx.EVT_MENU, self.onEight, self.toolbars[len(self.toolbars)-1])
+            elif len(self.toolbars) == 9:
+                self.Bind(wx.EVT_MENU, self.onNine, self.toolbars[len(self.toolbars)-1])
+            elif len(self.toolbars) == 10:
+                self.Bind(wx.EVT_MENU, self.onTen, self.toolbars[len(self.toolbars)-1])
+
+    def onOne(self,e):
+        print(self.sources[0])
+        self.control.SetValue(self.sources[0])
+        self.filename = self.filenames[0]
+        self.dirname = self.dirnames[0]
+        self.SetStyling()
+    def onTwo(self,e):
+        self.control.SetValue(self.sources[1])
+        self.filename = self.filenames[1]
+        self.dirname = self.dirnames[1]
+        self.SetStyling()
+    def onThree(self,e):
+        self.control.SetValue(self.sources[2])
+        self.filename = self.filenames[2]
+        self.dirname = self.dirnames[2]
+        self.SetStyling()
+    def onFour(self,e):
+        self.control.SetValue(self.sources[3])
+        self.filename = self.filenames[3]
+        self.dirname = self.dirnames[3]
+        self.SetStyling()
+    def onFive(self,e):
+        self.control.SetValue(self.sources[4])
+        self.filename = self.filenames[4]
+        self.dirname = self.dirnames[4]
+        self.SetStyling()
+    def onSix(self,e):
+        self.control.SetValue(self.sources[5])
+        self.filename = self.filenames[5]
+        self.dirname = self.dirnames[5]
+        self.SetStyling()
+    def onSeven(self,e):
+        self.control.SetValue(self.sources[6])
+        self.filename = self.filenames[6]
+        self.dirname = self.dirnames[6]
+        self.SetStyling()
+    def onEight(self,e):
+        self.control.SetValue(self.sources[7])
+        self.filename = self.filenames[7]
+        self.dirname = self.dirnames[7]
+        self.SetStyling()
+    def onNine(self,e):
+        self.control.SetValue(self.sources[8])
+        self.filename = self.filenames[8]
+        self.dirname = self.dirnames[8]
+        self.SetStyling()
+    def onTen(self,e):
+        self.control.SetValue(self.sources[9])
+        self.filename = self.filenames[9]
+        self.dirname = self.dirnames[9]
+        self.SetStyling()
 
     def OnOpen(self, e):
         try:
             dialog = wx.FileDialog(self, "Choose a file", self.dirname, "", "*.*", wx.FD_OPEN)
             if (dialog.ShowModal() == wx.ID_OK):
                 self.filename = dialog.GetFilename()
-                self.fileExtension = self.filename.split('.')[1]
                 self.dirname = dialog.GetDirectory()
                 self.SetStyling()
                 f = open(os.path.join(self.dirname, self.filename), 'r')
                 self.control.SetValue(f.read())
+                self.AddTool()
                 f.close()
             dialog.Destroy()
         except:
@@ -363,17 +448,17 @@ class MainWindow(wx.Frame):
         self.control.StyleSetSpec(stc.STC_STYLE_CONTROLCHAR, "face:%(other)s" % faces)
         self.control.StyleSetSpec(stc.STC_STYLE_BRACELIGHT, "fore:#FFFFFF,back:#0000FF,bold")
         self.control.StyleSetSpec(stc.STC_STYLE_BRACEBAD, "fore:#000000,back:#FF0000,bold")
-        self.control.SetSelAlpha(120)
+        self.control.SetSelAlpha(60)
 
         # Global default styles for all languages
-        if (self.fileExtension == ""):
+        if (self.filename != '' and self.filename.split('.')[1] == ""):
             self.control.StyleSetBackground(stc.STC_STYLE_DEFAULT, "#FFFFFF")
-            self.control.SetSelBackground(True, "#FFFFFF")
+            self.control.SetSelBackground(True, "#333333")
         else:
             self.control.StyleSetBackground(stc.STC_STYLE_DEFAULT, "#333333")
-            self.control.SetSelBackground(True, "#333333")
+            self.control.SetSelBackground(True, "#FFFFFF")
 
-        if (self.fileExtension == "cpp" or self.fileExtension == "h"):
+        if (self.filename != '' and self.filename.split('.')[1] == "cpp" or self.filename != '' and self.filename.split('.')[1] == "h"):
             self.control.SetKeyWords(0, keywords.c_kw)
             self.control.StyleSetSpec(stc.STC_C_DEFAULT,
                                      "fore:" + style["meta.default"]['color'] + ",back:" + style["meta.default"][
@@ -432,7 +517,7 @@ class MainWindow(wx.Frame):
             self.control.StyleSetSpec(stc.STC_C_REGEX,
                                      "fore:" + style["string.regex"]['color'] + ",back:" + style["meta.default"][
                                          'background-color'] + ",face:%(other)s,size:%(size)d" % faces)
-        elif (self.fileExtension == "py"):
+        elif (self.filename != '' and self.filename.split('.')[1] == "py"):
             self.control.SetKeyWords(0, keywords.p_kw)
             self.control.StyleSetSpec(wx.stc.STC_P_COMMENTLINE,
                                      "fore:" + style["comment"]['color'] + ",back:" + style["meta.default"][
