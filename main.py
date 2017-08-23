@@ -200,7 +200,7 @@ class MainWindow(wx.Frame):
             print(len(self.toolbars))
             self.sources.append(self.control.GetValue())
             self.filenames.append(self.filename)
-            self.filenames.append(self.dirname)
+            self.dirnames.append(self.dirname)
             self.toolbar.Realize()
 
             if len(self.toolbars) == 1:
