@@ -50,6 +50,8 @@ class MainWindow(wx.Frame):
         self.filenames = []
         self.dirnames = []
 
+        self.tabIndent = False
+        self.tabs = 0
         self.foldSymbols = 2
         self.leftMarginWidth = 25
         self.lineNumbersEnable = True
@@ -60,11 +62,12 @@ class MainWindow(wx.Frame):
         self.control.CmdKeyAssign(ord('='), stc.STC_SCMOD_CTRL, stc.STC_CMD_ZOOMIN)
         self.control.CmdKeyAssign(ord('-'), stc.STC_SCMOD_CTRL, stc.STC_CMD_ZOOMOUT)
 
-        self.control.SetLexer(stc.STC_LEX_PYTHON)
+        self.control.SetLexer(stc.STC_LEX_CPP)
         self.control.SetKeyWords(0, " ".join(keyword.kwlist))
 
         # Set some properties of the text control
-        self.control.SetViewWhiteSpace(False)
+        self.control.SetViewWhiteSpace(True)
+        self.control.SetViewWhiteSpace(stc.STC_WS_VISIBLEALWAYS)
         self.control.SetProperty("fold", "1")
         self.control.SetProperty("tab.timmy.whinge.level", "1")
 
@@ -176,9 +179,8 @@ class MainWindow(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnAbout, menuAbout)
 
         self.control.Bind(wx.EVT_KEY_UP, self.UpdateLineCol)
-        self.control.Bind(wx.EVT_CHAR, self.OnCharEvent)
+        self.control.Bind(wx.EVT_CHAR_HOOK, self.OnCharEvent)
         self.control.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
-
         self.Show()
 
         # defaulting the style
@@ -191,7 +193,9 @@ class MainWindow(wx.Frame):
         self.control.StyleSetSpec(stc.STC_STYLE_CONTROLCHAR, "face:%(other)s" % faces)
         self.control.StyleSetSpec(stc.STC_STYLE_BRACELIGHT, "fore:#FFFFFF,back:#0000FF,bold")
         self.control.StyleSetSpec(stc.STC_STYLE_BRACEBAD, "fore:#000000,back:#FF0000,bold")
-
+        self.control.SetBackSpaceUnIndents(1)
+        self.control.SetTabIndents(1)
+        self.control.SetUseTabs(1)
         self.SetStyling()
 
     def AddTool(self):
@@ -325,6 +329,7 @@ class MainWindow(wx.Frame):
                 self.SetStyling()
                 f = open(os.path.join(self.dirname, self.filename), 'w')
                 f.write(self.control.GetValue())
+                self.AddTool(self)
                 f.close()
             dlg.Destroy()
         except:
@@ -365,7 +370,7 @@ class MainWindow(wx.Frame):
         dialog.Destroy()
 
     def OnOpenTerminal(self,e):
-        os.system("termite 'ls'")
+        os.system("termite")
 
     def OnRun(self,e):
         if (self.fileExtension == "py"):
@@ -374,7 +379,8 @@ class MainWindow(wx.Frame):
     def UpdateLineCol(self,e):
         line = self.control.GetCurrentLine() + 1
         col = self.control.GetColumn(self.control.GetCurrentPos())
-        stat = "Line %s, Column %s" % (line, col)
+        pos = self.control.GetCurrentPos()
+        stat = "Line %s, Column %s, Pos %s" % (line, col, pos)
         self.StatusBar.SetStatusText(stat, 0)
 
     def OnLeftUp(self, e):
@@ -383,9 +389,45 @@ class MainWindow(wx.Frame):
         self.UpdateLineCol(self)
         e.Skip()
 
+
     def OnCharEvent(self,e):
         keycode = e.GetKeyCode()
         altdown = e.AltDown()
+        col =self.control.GetColumn(self.control.GetCurrentPos())
+        line = self.control.GetCurrentLine()
+        tempstring = ''
+        if self.tabIndent != True and keycode == 13 and self.control.GetLineIndentation(self.control.GetCurrentLine()) >= self.control.GetTabWidth():
+            if (line < self.control.GetLineCount()-1):
+                self.tabs = self.control.GetLineIndentation(self.control.GetCurrentLine()) / self.control.GetTabWidth()
+                tempPos = self.control.GetCurrentPos()
+                self.control.SetSelectionStart(self.control.GetCurrentPos())
+                self.control.SetSelectionEnd(self.control.GetLineEndPosition(self.control.GetCurrentLine()))
+                print(self.control.GetCurrentPos())
+                print(self.control.GetSelectedText())
+                tempstring = self.control.GetSelectedText()
+                self.control.DeleteRange(tempPos, self.control.GetCurrentPos() - tempPos)
+                self.control.LineDown()
+                self.control.Home()
+                for x in range(0,int(self.tabs)):
+                    self.control.Tab()
+                self.control.AddText(tempstring)
+                self.control.NewLine()
+                self.control.LineUp()
+                self.control.LineEnd()
+
+            else:
+                self.control.NewLine()
+                self.tabs = self.control.GetLineIndentation(self.control.GetCurrentLine()-1) / self.control.GetTabWidth()
+                self.control.SetSelectionStart(self.control.GetCurrentPos())
+                self.control.LineEnd()
+                self.control.SetSelectionEnd(self.control.GetCurrentPos())
+                print(self.control.GetSelection())
+                self.control.MoveSelectedLinesDown()
+                self.control.Home()
+                for x in range(0,int(self.tabs)):
+                    self.control.Tab()
+                self.control.LineEnd()
+            return
         if (keycode == 14):
             self.OnNew(self)
         elif(keycode == 15):
@@ -444,7 +486,7 @@ class MainWindow(wx.Frame):
 
         # Global default styles for all languages
         self.control.StyleSetSpec(stc.STC_STYLE_DEFAULT, "face:%(helv)s,size:%(size)d" % faces)
-        self.control.StyleSetSpec(stc.STC_STYLE_LINENUMBER, "back:#C0C0C0,face:%(helv)s,size:%(size2)d" % faces)
+        self.control.StyleSetSpec(stc.STC_STYLE_LINENUMBER, "front:#000000,back:#333333,face:%(helv)s,size:%(size2)d" % faces)
         self.control.StyleSetSpec(stc.STC_STYLE_CONTROLCHAR, "face:%(other)s" % faces)
         self.control.StyleSetSpec(stc.STC_STYLE_BRACELIGHT, "fore:#FFFFFF,back:#0000FF,bold")
         self.control.StyleSetSpec(stc.STC_STYLE_BRACEBAD, "fore:#000000,back:#FF0000,bold")
@@ -453,9 +495,13 @@ class MainWindow(wx.Frame):
         # Global default styles for all languages
         if (self.filename != '' and self.filename.split('.')[1] == ""):
             self.control.StyleSetBackground(stc.STC_STYLE_DEFAULT, "#FFFFFF")
+            self.control.StyleSetForeground(stc.STC_STYLE_DEFAULT, "#777777")
             self.control.SetSelBackground(True, "#333333")
+            self.control.SetSelForeground(True, "#FF0000")
+
         else:
             self.control.StyleSetBackground(stc.STC_STYLE_DEFAULT, "#333333")
+            self.control.StyleSetForeground(stc.STC_STYLE_DEFAULT, "#777777")
             self.control.SetSelBackground(True, "#FFFFFF")
 
         if (self.filename != '' and self.filename.split('.')[1] == "cpp" or self.filename != '' and self.filename.split('.')[1] == "h"):
